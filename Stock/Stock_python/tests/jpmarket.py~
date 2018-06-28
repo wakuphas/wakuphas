@@ -1,0 +1,10 @@
+import jpmarket
+import datetime
+
+#日付指定
+start = datetime(1999, 1, 1)
+end = datetime(2014, 12, 8)
+
+#皆大好き1301の株価表示
+stock = jpmarket.DataReader(1301, 'yahoojp', start, end)
+print('stock')
