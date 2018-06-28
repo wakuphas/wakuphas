@@ -50,12 +50,11 @@ void fitting(){
     }
 
 
-  printf("\n***************************\n",);
+  printf("\n***************************\n");
 
 
-  Double_t gaussian
-    (Double_t *a, Double_t *par){
-    Double_t Gauss,x;
+  Double_t gaussian (Double_t *a, Double_t *par){
+    Double_t Gauss,x;
     x = a[0];
     //Gauss = 2.5e-4 * log(pow(sqrt(par[1]*par[1]-x*x)/x, 2)+1) * par[0];
     Gauss = 2.5e-4 * log(pow(par[1]/x, 2)+1) * par[0];
@@ -83,7 +82,7 @@ void fitting(){
   f1->Draw("same");
   graph1->Fit("f1","","",3,160);
 
-  printf("***************************\n",);
+  printf("***************************\n");
 
 
 }

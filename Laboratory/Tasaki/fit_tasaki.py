@@ -21,9 +21,7 @@ from ROOT import *
 X_mean, X_stack_mean = array('d'), array('d')
 X_mean2, X_stack_mean2 = array('d'), array('d')
 data_x = np.loadtxt("662.dat", comments="#", delimiter=' ')
-#data_x2 = np.loadtxt("geant662kev.dat", comments="#", delimiter=' ')  # geant 4 soil=3.0cm
-#data_x2 = np.loadtxt("geant662kev_Soildepth0.dat", comments="#", delimiter=' ')  # geant 4 soil=0cm
-data_x2 = np.loadtxt("geant662kev_Soildepth0.1cm.dat", comments="#", delimiter=' ')  # geant 4 soil=0.1cm
+#data_x2 = np.loadtxt("geant662kev_Soildepth0.1cm.dat", comments="#", delimiter=' ')  # geant 4 soil=0.1cm
 
 
 # Observed = Geant * hosei
@@ -31,24 +29,22 @@ data_x2 = np.loadtxt("geant662kev_Soildepth0.1cm.dat", comments="#", delimiter='
 for i in range (0,len(data_x[:,0])):
     X_mean.append(data_x[i,0])
     X_stack_mean.append(data_x[i,1])
-    X_mean2.append(data_x2[i,0])
-    X_stack_mean2.append(data_x2[i,2]) # geant 4
-#X_stack_mean.append(data_x[i,1])
-#X_stack_mean.append(data_x[i,1]/673.1182796)
+    #X_mean2.append(data_x2[i,0])
+    #X_stack_mean2.append(data_x2[i,2]) # geant 4
 
 print "aho1"
 
 
 #fit area
-fit_min = 1e-100
-#fit_min = 50
-fit_max = 150
+fit_min = 3
+fit_max = 160
 
 
 #log(h^-2+1)
 #q[0]:p q[1]:L_air
 def gauss(y, q):
-    result = 2.5e-4 * np.log(np.power(np.sqrt(q[1]*q[1]-y[0]*y[0]) /(y[0]), 2) + 1) * q[0]
+    #result = 2.5e-4 * np.log(np.power(np.sqrt(q[1]*q[1]-y[0]*y[0]) /(y[0]), 2) + 1) * q[0]
+    result = 2.5e-4 * np.log(np.power(q[1]/y[0], 2)+1) * q[0]
     return result
 """
 #h^-1
@@ -92,8 +88,8 @@ gau2.FixParameter(2,2.32071)
 cv3 = ROOT.TCanvas("cs3", "Graph3", 20, 42, 600,600)
 #cv3.SetLogx()
 #cv3.SetLogy()
-#graph3 = ROOT.TGraph(len(X_mean), X_mean, X_stack_mean)
-graph3 = ROOT.TGraph(len(X_mean2), X_mean2, X_stack_mean2) # Geant 4
+graph3 = ROOT.TGraph(len(X_mean), X_mean, X_stack_mean)
+#graph3 = ROOT.TGraph(len(X_mean2), X_mean2, X_stack_mean2) # Geant 4
 
 graph3.SetTitle("662keV fit")
 graph3.SetMarkerStyle(1)
