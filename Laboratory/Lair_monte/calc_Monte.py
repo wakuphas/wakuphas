@@ -15,17 +15,22 @@ import matplotlib.pyplot as plt
 # Parameters #
 ##############
 MONTE_NUM = 100
+calc_NUM = 100
 
 fit_min = 0.1 #cm
 fit_max = 100 #cm
 
 def func(y, q):
     result = q[0] * np.log(y[0]*q[1] + q[2]) + q[3]*y[0];
+    #result = q[0] * np.log(y[0]*q[1] + q[2]) + q[3];
     return result
-paramater_0 = 1
-paramater_1 = 1
-paramater_2 = 1
-paramater_3 = 1
+paramater_0 = 2.80058e+01
+paramater_1 = 1.83659e+01
+paramater_2 = 1.30348e+01
+paramater_3 = -7.69248e-01
+
+
+
 
 ################
 # Loading data #
@@ -42,6 +47,8 @@ for i in range (0,len(data_1[:,0])):
 # Creating random Lair #
 ########################
 p0_list, p1_list, p2_list, p3_list = array('d'), array('d'), array('d'), array('d')
+calc_list = [[] for i in range(calc_NUM)] # making empty list
+calc_mean, calc_upper, calc_lower = array('d'),array('d'),array('d')
 
 for s in range (0,MONTE_NUM):
     L_rand, Lerr_rand, color =array('d'), array('d'), array('d')
@@ -49,15 +56,17 @@ for s in range (0,MONTE_NUM):
         #L_rand.append (np.random.normal()*Lerr[i] + L[i])
         L_rand.append (np.random.normal(L[i], Lerr[i], 1)) #
 
-    
+
     ci = ROOT.TColor.GetColor("#99cccc")
     gau = ROOT.TF1("func", func, fit_min, fit_max, 4)
     gau.SetParameters(paramater_0, paramater_1, paramater_2, paramater_3)
-    gau.SetParLimits(0,0,100)
+
+    gau.SetParLimits(0,0,50)
     gau.SetParLimits(1,0,1000)
-    gau.SetParLimits(2,-50,50)
-    gau.SetParLimits(3,-10,10)
-    #gau.SetParNames("p [kBq]","L_air [m]")
+    gau.SetParLimits(2,0,50)
+    gau.SetParLimits(3,-1,1)
+    gau.FixParameter(3,0)
+
     graph3 = ROOT.TGraph(len(depth), depth, L_rand)
     graph3.Fit("func","R")
     """
@@ -81,13 +90,46 @@ for s in range (0,MONTE_NUM):
     p2_list.append(gau.GetParameter(2))
     p3_list.append(gau.GetParameter(3))
 #    cv3.Update()
+    plt.plot(depth, L_rand, "o", color="black", ms=1)
 
-    plt.plot(depth, L_rand, "o", color="b")
+
+    ################################
+    # fitting lines wo kasane gaki #
+    ################################
+    x_calc = np.logspace(-1, 2, calc_NUM)
+    calc = p0_list[s] * np.log(x_calc*p1_list[s] + p2_list[s]) + p3_list[s]*x_calc
+    #plt.plot(x_calc, calc)
+
+    ###################################################################
+    # making calc_list[[calc[x0]],[calc[x1]], ... , [calc[calc_NUM]]] #
+    ###################################################################
+    for t in range (0,len(x_calc)):
+        calc_list[t].append(p0_list[s] * np.log(x_calc[t]*p1_list[s] + p2_list[s]) + p3_list[s]*x_calc[t])
+    """
+    for t in range (0,len(x_calc)):
+        code1 = 'calc_list{} = {}'.format(t, p0_list[s] * np.log(x_calc[t]*p1_list[s] + p2_list[s]) + p3_list[s]*x_calc[t])
+        exec(code1)
+    """
     s+=1
 
 
+print(calc_list)
+for p in range (0,len(x_calc)):
+    calc_mean.append(np.average(calc_list[p]))
+    calc_upper.append(np.average(calc_list[p]) + np.std(calc_list[p]))
+    calc_lower.append(np.average(calc_list[p]) - np.std(calc_list[p]))
 
 
+plt.plot(x_calc, calc_mean, ms=3, ls="--", color="r")
+plt.plot(x_calc, calc_upper, ms=3, ls="-", color="r")
+plt.plot(x_calc, calc_lower, ms=3, ls="-", color="r")
+
+
+
+##########################
+# Plot best fit function #
+##########################
+"""
 mean_p0 = np.average(p0_list)
 sigma_p0 = np.std(p0_list)
 mean_p1 = np.average(p1_list)
@@ -105,6 +147,15 @@ print "mean p1 = %.3f" % (mean_p1)
 print "mean p2 = %.3f" % (mean_p2)
 print "mean p3 = %.3f" % (mean_p3)
 
+p0 = (mean_p0+sigma_p0)
+q0 = (mean_p0-sigma_p0)
+p1 = (mean_p1+sigma_p1)
+q1 = (mean_p1-sigma_p1)
+p2 = (mean_p2+sigma_p2)
+q2 = (mean_p2-sigma_p2)
+p3 = (mean_p3+sigma_p3)
+q3 = (mean_p3-sigma_p3)
+
 print "\n"
 print "p0 = %.3f" % (mean_p0+sigma_p0)
 print "q0 = %.3f" % (mean_p0-sigma_p0)
@@ -116,14 +167,33 @@ print "p3 = %.3f" % (mean_p3+sigma_p3)
 print "q3 = %.3f" % (mean_p3-sigma_p3)
 
 
-plt.xscale("log")
-plt.show()
+x = np.logspace(-1, 2)
+y0 = mean_p0 * np.log(x*mean_p1 + mean_p2) + mean_p3*x # mean
+y1 = p0 * np.log(x*p1 + p2) + p3*x # 1sigma
+y2 = q0 * np.log(x*q1 + q2) + q3*x # 1sigma
+plt.plot(x,y0, linestyle= "--" , color="r")
+plt.plot(x,y1, "r")
+plt.plot(x,y2, "r")
+"""
 
 
-np.random.seed()
-data = np.random.normal(72, 2.32/2, 10000)
+# observed Lair
+x = np.logspace(-1, 2)
+y3 = 104 + x*0
+y4 = 98  + x*0
+plt.plot(x,y3, ls="--", c="b")
+plt.plot(x,y4, ls="--", c="b")
 
-plt.hist(data, bins=100, normed=True)
+# real data plotting
+plt.errorbar(depth,L,yerr=Lerr,fmt='ro',ecolor='r', ms=8) # observed
+
+
+
+#plt.xscale("log")
+
+#np.random.seed()
+#data = np.random.normal(72, 2.32/2, 10000)
+#plt.hist(data, bins=100, normed=True)
 
 plt.show()
 
