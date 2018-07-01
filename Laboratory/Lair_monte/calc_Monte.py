@@ -10,11 +10,13 @@ import subprocess
 import os
 from time import sleep
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
 
 ##############
 # Parameters #
 ##############
-MONTE_NUM = 100
+MONTE_NUM = 1000
 calc_NUM = 100
 
 fit_min = 0.1 #cm
@@ -30,6 +32,9 @@ paramater_2 = 1.30348e+01
 paramater_3 = -7.69248e-01
 
 
+fig1 = plt.figure(figsize=(8,6))
+
+
 
 
 ################
@@ -42,6 +47,10 @@ for i in range (0,len(data_1[:,0])):
     depth.append(data_1[i,0])
     L.append(data_1[i,1])
     Lerr.append(data_1[i,2])
+
+# real data plotting
+plt.errorbar(depth,L,yerr=Lerr,fmt='ro',ecolor='r', ms=8, label="Geant 4") # observed
+
 
 ########################
 # Creating random Lair #
@@ -90,7 +99,7 @@ for s in range (0,MONTE_NUM):
     p2_list.append(gau.GetParameter(2))
     p3_list.append(gau.GetParameter(3))
 #    cv3.Update()
-    plt.plot(depth, L_rand, "o", color="black", ms=1)
+#   plt.plot(depth, L_rand, "o", color="black", ms=1)
 
 
     ################################
@@ -98,7 +107,7 @@ for s in range (0,MONTE_NUM):
     ################################
     x_calc = np.logspace(-1, 2, calc_NUM)
     calc = p0_list[s] * np.log(x_calc*p1_list[s] + p2_list[s]) + p3_list[s]*x_calc
-    #plt.plot(x_calc, calc)
+#   plt.plot(x_calc, calc)
 
     ###################################################################
     # making calc_list[[calc[x0]],[calc[x1]], ... , [calc[calc_NUM]]] #
@@ -120,8 +129,8 @@ for p in range (0,len(x_calc)):
     calc_lower.append(np.average(calc_list[p]) - np.std(calc_list[p]))
 
 
-plt.plot(x_calc, calc_mean, ms=3, ls="--", color="r")
-plt.plot(x_calc, calc_upper, ms=3, ls="-", color="r")
+plt.plot(x_calc, calc_mean, ms=3, ls="--", color="r", label="Mean")
+plt.plot(x_calc, calc_upper, ms=3, ls="-", color="r", label="Fitting error")
 plt.plot(x_calc, calc_lower, ms=3, ls="-", color="r")
 
 
@@ -181,20 +190,57 @@ plt.plot(x,y2, "r")
 x = np.logspace(-1, 2)
 y3 = 104 + x*0
 y4 = 98  + x*0
-plt.plot(x,y3, ls="--", c="b")
+plt.plot(x,y3, ls="--", c="b", label="Observed $L_{air}$")
 plt.plot(x,y4, ls="--", c="b")
 
-# real data plotting
-plt.errorbar(depth,L,yerr=Lerr,fmt='ro',ecolor='r', ms=8) # observed
 
-
-
-#plt.xscale("log")
 
 #np.random.seed()
 #data = np.random.normal(72, 2.32/2, 10000)
 #plt.hist(data, bins=100, normed=True)
 
+
+
+
+
+############
+# save fig #
+############
+
+plt.rcParams['font.family'] = 'Arial'
+plt.rcParams['pdf.fonttype'] = 42
+params = {'backend': 'ps', #
+    'axes.labelsize': 15, #
+    'text.fontsize': 15, #
+    'legend.fontsize': 15, #
+    'xtick.labelsize': 15, #
+    'ytick.labelsize': 15,
+    'text.usetex': False} #
+plt.rcParams.update(params)
+
+
+plt.xlabel("Depth distribution from the ground surface of $^{137}$Cs [cm]")
+plt.ylabel("$L_{air}$ [m]")
+plt.xscale("log")
+#plt.legend(['G4 Data', 'Mean','Fitting error', '', 'Observed Lair'],loc="upper left")
+plt.legend(loc="upper left")
+"""
+plt.plot(X_mean, X_stack_mean, 'o')
+plt.plot(height, eps, '-')
+plt.plot(height_app, eps_app, '-')
+plt.legend(['Data','Theory', 'Approx.'])
 plt.show()
+"""
+plt.show()
+
+# set path
+pp = PdfPages('pdf1.pdf')
+
+# save figure
+pp.savefig(fig1)
+
+# close file
+pp.close()
+
 
 
