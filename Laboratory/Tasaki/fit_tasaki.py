@@ -20,7 +20,9 @@ from ROOT import *
 ##############
 X_mean, X_stack_mean = array('d'), array('d')
 X_mean2, X_stack_mean2 = array('d'), array('d')
+data_x = np.loadtxt("662_bkgv2.dat", comments="#", delimiter=' ')
 data_x = np.loadtxt("662.dat", comments="#", delimiter=' ')
+
 #data_x2 = np.loadtxt("geant662kev_Soildepth0.1cm.dat", comments="#", delimiter=' ')  # geant 4 soil=0.1cm
 
 
@@ -36,7 +38,7 @@ print "aho1"
 
 
 #fit area
-fit_min = 3
+fit_min = 0.4
 fit_max = 160
 
 
@@ -60,8 +62,8 @@ print "fit min =",fit_min, "fit max =", fit_max
 print "max X =", max(X_stack_mean)
 
 parameter_optimal = array('d')
-paramater_0 = 15
-paramater_1 = 575
+paramater_0 = 200
+paramater_1 = 100
 
 
 

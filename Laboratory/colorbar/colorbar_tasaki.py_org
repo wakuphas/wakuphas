@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+import numpy as np
+import cv 
+import cv2
+from PIL import Image
+import pyfits
+import matplotlib.pyplot as plt
+from array import array
+import scipy.optimize
+from scipy import optimize
+import math as math
+import ROOT
+from ROOT import *
+from matplotlib.backends.backend_pdf import PdfPages
+
+
+
+
+################
+### colorbar ###
+################
+p = 215   #[kBq/m^2]
+L_air1 = 110 #[m]
+L_air2 = 69 #[m]
+
+
+height, doserate = [],[]
+data_x = np.loadtxt("662.dat", comments="#", delimiter=' ')
+
+
+for i in range (0,len(data_x[:,0])):
+    height.append(data_x[i,0])
+    doserate.append(data_x[i,1])
+
+
+x = np.arange(0.5, 160, 0.5)
+y = np.arange(0, 1, 0.5)
+
+
+
+X, Y = np.meshgrid(x, y)
+Z1 = 2.4e-4 * np.log(np.power((L_air1/X), 2) + 1.0) * p
+Z2 = 2.4e-4 * np.log(np.power((L_air2/X), 2) + 1.0) * p
+
+
+
+
+
+fig = plt.figure(figsize=(9, 4))
+ax1 = fig.add_subplot(2, 1, 1)
+ax1.pcolormesh(X, Y, Z1, cmap='gist_ncar')
+#plt.pcolor(X, Y, Z, cmap='hsv')
+#ax1.set_xlabel('X', fontsize=24)
+#ax1.set_ylabel('Y', fontsize=24)
+
+ax2 = fig.add_subplot(2, 1, 2)
+ax2.pcolormesh(X, Y, Z2, cmap='gist_ncar')
+ax2.set_xlabel('Height [m]', fontsize=24)
+#ax2.set_ylabel('Y', fontsize=24)
+
+plt.subplots_adjust(wspace=1.0, hspace=0.3)
+
+cbar=fig.colorbar (ax=ax1,orientation="vertical")
+cbar.set_label("Label", fontname="Arial", fontsize=24)
+
+
+
+
+grid = ImageGrid(fig, 111, nrows_ncols=(2, 1), axes_pad=0.15, share_all=True, label_mode='L',
+                 cbar_location='right', cbar_mode='single')
+
+fig.canvas.draw()
+
+imgs = MultipleImagesAndRectangle(fig, grid)
+
+cbar = grid.cbar_axes[0].colorbar(imgs[-1])
+# cbar.ax.axis('off')
+cbar.cbar_axis.set_visible(False) # これまでと同じ見た目にするにはこっち（cbar_axisはtickがついているAxisを指す）
+# cbar.ax.xaxis.set_visible(False) # このようにtickのついているAxisオブジェクトを直接操作するのと等価
+cbar.ax.artists = []
+
+######
+
+plt.rcParams['font.family'] = 'Arial'
+plt.rcParams['pdf.fonttype'] = 42
+params = {'backend': 'ps', #
+    'axes.labelsize': 15, #
+    'text.fontsize': 15, #
+    'legend.fontsize': 15, #
+    'xtick.labelsize': 15, #
+    'ytick.labelsize': 15,
+    'text.usetex': False} #
+plt.rcParams.update(params)
+#plt.xlabel('Height [m]')
+#plt.ylabel('Relative Error [%]')
+
+#plt.ylim([-2,20])
+#plt.plot(height, relative_err, '-')
+#plt.legend(['Approx. vs. Theory'])
+plt.show()
+
+# set path
+pp = PdfPages('pdf.pdf')
+
+# save figure
+pp.savefig(fig)
+
+# close file
+pp.close()
+
+####
+"""
+pp=plt.colorbar (orientation="vertical")
+pp.set_label("Label", fontname="Arial", fontsize=24)
+
+plt.xlabel('X', fontsize=24)
+plt.ylabel('Y', fontsize=24)
+"""
+
+
+
+

@@ -16,7 +16,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 ##############
 # Parameters #
 ##############
-MONTE_NUM = 1000
+MONTE_NUM = 500
 calc_NUM = 100
 
 fit_min = 0.1 #cm
@@ -98,8 +98,8 @@ for s in range (0,MONTE_NUM):
     p1_list.append(gau.GetParameter(1))
     p2_list.append(gau.GetParameter(2))
     p3_list.append(gau.GetParameter(3))
-#    cv3.Update()
-#   plt.plot(depth, L_rand, "o", color="black", ms=1)
+#   cv3.Update()
+#    plt.plot(depth, L_rand, "o", color="black", ms=1)
 
 
     ################################
@@ -122,17 +122,17 @@ for s in range (0,MONTE_NUM):
     s+=1
 
 
-print(calc_list)
+#print(calc_list)
 for p in range (0,len(x_calc)):
     calc_mean.append(np.average(calc_list[p]))
     calc_upper.append(np.average(calc_list[p]) + np.std(calc_list[p]))
     calc_lower.append(np.average(calc_list[p]) - np.std(calc_list[p]))
 
 
-plt.plot(x_calc, calc_mean, ms=3, ls="--", color="r", label="Mean")
-plt.plot(x_calc, calc_upper, ms=3, ls="-", color="r", label="Fitting error")
-plt.plot(x_calc, calc_lower, ms=3, ls="-", color="r")
-
+#plt.plot(x_calc, calc_mean, ms=3, ls="--", color="r", label="Mean")
+#plt.plot(x_calc, calc_upper, ms=3, ls="-", color="r", label="Fitting error")
+#plt.plot(x_calc, calc_lower, ms=3, ls="-", color="r")
+plt.fill_between(x_calc,calc_upper,calc_lower,facecolor='y',alpha=0.5, label="Fitting(Monte Carlo)")
 
 
 ##########################
@@ -190,6 +190,8 @@ plt.plot(x,y2, "r")
 x = np.logspace(-1, 2)
 y3 = 104 + x*0
 y4 = 98  + x*0
+y3 = 115 + x*0
+y4 = 105  + x*0
 plt.plot(x,y3, ls="--", c="b", label="Observed $L_{air}$")
 plt.plot(x,y4, ls="--", c="b")
 

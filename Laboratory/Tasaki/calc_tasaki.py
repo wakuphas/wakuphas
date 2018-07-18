@@ -161,7 +161,6 @@ plt.plot(height_app, eps_app, '-')
 plt.legend(['Data','Theory', 'Approx.'])
 plt.show()
 
-
 # set path
 pp = PdfPages('pdf1.pdf')
 
