@@ -18,10 +18,11 @@ from ROOT import *
 ##############
 ### X axis ###
 ##############
-X_mean, X_stack_mean = array('d'), array('d')
+X_mean, X_stack_mean, X_err = array('d'), array('d'), array('d')
 X_mean2, X_stack_mean2 = array('d'), array('d')
 data_x = np.loadtxt("662_bkgv2.dat", comments="#", delimiter=' ')
-data_x = np.loadtxt("662.dat", comments="#", delimiter=' ')
+#data_x = np.loadtxt("662.dat", comments="#", delimiter=' ')
+#data_x = np.loadtxt("662_err.dat", comments="#", delimiter=' ')
 
 #data_x2 = np.loadtxt("geant662kev_Soildepth0.1cm.dat", comments="#", delimiter=' ')  # geant 4 soil=0.1cm
 
@@ -31,8 +32,7 @@ data_x = np.loadtxt("662.dat", comments="#", delimiter=' ')
 for i in range (0,len(data_x[:,0])):
     X_mean.append(data_x[i,0])
     X_stack_mean.append(data_x[i,1])
-    #X_mean2.append(data_x2[i,0])
-    #X_stack_mean2.append(data_x2[i,2]) # geant 4
+#X_err.append(data_x[i,2])
 
 print "aho1"
 
