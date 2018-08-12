@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.random import *
-import pyfits
+#import pyfits
 import math as math
 #from RootPlot import RootPlot
 import ROOT
