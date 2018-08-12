@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.random import *
-#import pyfits
+import pyfits
 import math as math
 #from RootPlot import RootPlot
 import ROOT
@@ -15,8 +15,8 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 ##############
 # Parameters #
-##############
-MONTE_NUM = 500
+#############
+MONTE_NUM = 1000
 calc_NUM = 100
 
 fit_min = 0.1 #cm
@@ -221,7 +221,8 @@ params = {'backend': 'ps', #
 plt.rcParams.update(params)
 
 
-plt.xlabel("Depth distribution from the ground surface of $^{137}$Cs [cm]")
+#plt.xlabel("Depth distribution from the ground surface of $^{137}$Cs [cm]")
+plt.xlabel(u'Buffer depth of $^{137}$Cs $\u03b2$ [cm]')
 plt.ylabel("$L_{air}$ [m]")
 plt.xscale("log")
 #plt.legend(['G4 Data', 'Mean','Fitting error', '', 'Observed Lair'],loc="upper left")

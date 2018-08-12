@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import numpy as np
-#import cv 
-#import cv2
+import cv 
+import cv2
 from PIL import Image
-#import pyfits
+import pyfits
 import matplotlib.pyplot as plt
 from array import array
 import scipy.optimize
@@ -34,7 +34,7 @@ for i in range (0,len(data_x[:,0])):
     X_stack_mean.append(data_x[i,1])
 #X_err.append(data_x[i,2])
 
-print ("aho1")
+print "aho1"
 
 
 #fit area
@@ -57,9 +57,9 @@ def gauss(y, q):
 ci = ROOT.TColor.GetColor("#99cccc")
 ci2 = ROOT.TColor.GetColor("#000000")
 
-print ("")
-print ("fit min =",fit_min, "fit max =", fit_max)
-print ("max X =", max(X_stack_mean))
+print ""
+print "fit min =",fit_min, "fit max =", fit_max
+print "max X =", max(X_stack_mean)
 
 parameter_optimal = array('d')
 paramater_0 = 200

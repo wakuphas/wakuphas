@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import numpy as np
-#import cv 
+#import cv
 #import cv2
 from PIL import Image
 import pyfits
@@ -19,7 +19,9 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 ################
 ### colorbar ###
 ################
-p = 215   #[kBq/m^2]
+#p = 215   #[kBq/m^2]
+p = 1682   #[kBq/m^2]
+#L_air1 = 110 #[m]
 L_air1 = 354 #[m]
 #L_air1 = 136 #[m]
 L_air2 = 69 #[m]
@@ -69,14 +71,15 @@ ax1.pcolormesh(X, Y, Z2, cmap='gist_ncar')
 #plt.pcolor(X, Y, Z, cmap='hsv')
 #ax1.set_xlabel('X', fontsize=24)
 ax1.set_ylabel('Height [m]', fontsize=18)
-ax1.set_xlabel('69 m', fontsize=18)
+ax1.set_xlabel('Theory', fontsize=18)
 ax1.tick_params(labelbottom="off",bottom="off")
 
 
 ax2 = fig.add_subplot(1, 2, 2)
 ax2.pcolormesh(X, Y, Z1, cmap='gist_ncar')
-ax2.set_xlabel('110 m', fontsize=18)
+ax2.set_xlabel('Observed', fontsize=18)
 ax2.tick_params(labelbottom="off",bottom="off")
+
 
 plt.subplots_adjust(wspace=0.5, hspace=0.3, bottom=0.2, left=0.2)
 #"""
@@ -90,7 +93,7 @@ plt.subplots_adjust(wspace=0.5, hspace=0.3, bottom=0.2, left=0.2)
 """
 fig, ax = plt.subplots()
 
-image = ax.pcolormesh(X, Y, Z2, cmap='gist_ncar')
+image = ax.pcolormesh(X, Y, Z1, cmap='gist_ncar')
 ax.axis("image")
 
 divider = make_axes_locatable(ax)
