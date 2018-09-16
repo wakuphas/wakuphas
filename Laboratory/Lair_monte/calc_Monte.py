@@ -212,17 +212,18 @@ plt.plot(x,y4, ls="--", c="b")
 plt.rcParams['font.family'] = 'Arial'
 plt.rcParams['pdf.fonttype'] = 42
 params = {'backend': 'ps', #
-    'axes.labelsize': 15, #
-    'text.fontsize': 15, #
-    'legend.fontsize': 15, #
-    'xtick.labelsize': 15, #
-    'ytick.labelsize': 15,
+    'axes.labelsize': 20, #
+    'text.fontsize': 20, #
+    'legend.fontsize': 20, #
+    'xtick.labelsize': 20, #
+    'ytick.labelsize': 20,
     'text.usetex': False} #
 plt.rcParams.update(params)
 
 
 #plt.xlabel("Depth distribution from the ground surface of $^{137}$Cs [cm]")
-plt.xlabel(u'Buffer depth of $^{137}$Cs $\u03b2$ [cm]')
+#plt.xlabel(u'Buffer depth of $^{137}$Cs $\u03b2$ [cm]')
+plt.xlabel(u'Buffer depth $\u03b2$ [cm]')
 plt.ylabel("$L_{air}$ [m]")
 plt.xscale("log")
 #plt.legend(['G4 Data', 'Mean','Fitting error', '', 'Observed Lair'],loc="upper left")

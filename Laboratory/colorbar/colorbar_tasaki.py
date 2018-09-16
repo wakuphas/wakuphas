@@ -65,42 +65,45 @@ params = {'backend': 'ps', #
     'text.usetex': False} #
 plt.rcParams.update(params)
 
-#"""
+
+# plot theory and observed
+"""
 ax1 = fig.add_subplot(1, 2, 1)
-ax1.pcolormesh(X, Y, Z2, cmap='gist_ncar')
-#plt.pcolor(X, Y, Z, cmap='hsv')
-#ax1.set_xlabel('X', fontsize=24)
+#ax1.pcolormesh(X, Y, Z2, cmap='gist_ncar')
+mesh1 = ax1.pcolormesh(X, Y, Z2, cmap='gist_ncar')
 ax1.set_ylabel('Height [m]', fontsize=18)
 ax1.set_xlabel('Theory', fontsize=18)
 ax1.tick_params(labelbottom="off",bottom="off")
-
+mesh1.set_clim(0.1,5.3)
 
 ax2 = fig.add_subplot(1, 2, 2)
-ax2.pcolormesh(X, Y, Z1, cmap='gist_ncar')
+#ax2.pcolormesh(X, Y, Z1, cmap='gist_ncar')
+mesh2 = ax2.pcolormesh(X, Y, Z1, cmap='gist_ncar')
 ax2.set_xlabel('Observed', fontsize=18)
 ax2.tick_params(labelbottom="off",bottom="off")
-
+mesh2.set_clim(0.1,5.3)
 
 plt.subplots_adjust(wspace=0.5, hspace=0.3, bottom=0.2, left=0.2)
-#"""
-
-
-
-
-
-##
-##
 """
-fig, ax = plt.subplots()
 
-image = ax.pcolormesh(X, Y, Z1, cmap='gist_ncar')
+
+
+
+
+## plot colorbar
+##
+#"""
+fig, ax = plt.subplots()
+#image = ax.pcolormesh(X, Y, Z1, cmap='gist_ncar')
+image = ax.pcolormesh(X, Y, Z2, cmap='gist_ncar')
 ax.axis("image")
 
 divider = make_axes_locatable(ax)
 ax_cb = divider.new_horizontal(size="10%", pad=1.0)
 fig.add_axes(ax_cb)
+image.set_clim(0.1,5.3)
 plt.colorbar(image, cax=ax_cb, label=u'dose rate [\u03bcSv/h]')
-"""
+#"""
 ##
 ##
 

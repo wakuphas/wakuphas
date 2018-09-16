@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import numpy as np
-import cv 
+#import cv
 import cv2
 from PIL import Image
 
-import pyfits
+#import pyfits
+import astropy.io.fits as pyfits
 import matplotlib.pyplot as plt
 
 from array import array
@@ -13,7 +14,8 @@ import scipy.optimize
 
 from scipy import optimize
 import math as math
-import ROOT
+#import ROOT  # If you tuurn on this, it won't be running...why?
+
 #from numpy import *
 
 add = 1 #root no figure size wo bigger ni dekiru
@@ -27,15 +29,15 @@ fit_max_y = 580
 
 
 
-print "fit width ", fit_max_x - fit_min_x
-print "fit height ", fit_max_y - fit_min_y
+print ("fit width ", fit_max_x - fit_min_x)
+print ("fit height ", fit_max_y - fit_min_y)
 
 hdulist=pyfits.open('2015.fits')
 hdu=hdulist[0]
 data=hdu.data
 header=hdu.header
 height, width = data.shape
-print "width=",width,"height=",height
+print ("width=",width,"height=",height)
 #print data[height-1][width-1]
 
 
@@ -68,8 +70,8 @@ for y in range(fit_min_y-add,fit_max_y  + add):
     f1.write(str)
 f1.close()
 
-print "width + %d*2 = " % add, fit_max_x - fit_min_x + add*2
-print "height + %d*2 = " % add, fit_max_y - fit_min_y + add*2
+print ("width + %d*2 = " % add, fit_max_x - fit_min_x + add*2)
+print ("height + %d*2 = " % add, fit_max_y - fit_min_y + add*2)
 f_root = open('width_height_for_root.txt','w')
 str_x = "%d " % (fit_max_x - fit_min_x + add*2)
 str_y = "%d " % (fit_max_y - fit_min_y + add*2)
@@ -188,9 +190,9 @@ ci2 = ROOT.TColor.GetColor("#000000")
 #fit area
 fit_min = fit_min_x
 fit_max = fit_max_x
-print ""
-print "fit min =",fit_min, "Hz, fit max =", fit_max, "Hz"
-print "max X_stack_mean =", max(X_stack_mean)
+print ("")
+print ("fit min =",fit_min, "Hz, fit max =", fit_max, "Hz")
+print ("max X_stack_mean =", max(X_stack_mean))
 
 parameter_optimal = array('d')
 paramater_0 = max(X_stack_mean)
@@ -277,9 +279,9 @@ ci2 = ROOT.TColor.GetColor("#000000")
 fit_min = fit_min_y
 #fit_max = max(Y_mean)
 fit_max = fit_max_y
-print ""
-print "fit min =",fit_min, "Hz, fit max =", fit_max, "Hz"
-print "max Y_stack_mean =", max(Y_stack_mean)
+print ("")
+print ("fit min =",fit_min, "Hz, fit max =", fit_max, "Hz")
+print ("max Y_stack_mean =", max(Y_stack_mean))
 
 parameter_optimal = array('d')
 paramater_0 = max(Y_stack_mean)
