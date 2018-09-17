@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# 現状、label/stopsing_original/のtxtデータは9行まで（2桁が対応していない謎のバグ）　2018.9.10
+
 """
 Created on Wed Dec  9 14:55:43 2015
 This script is to convert the txt annotation files to appropriate format needed by YOLO 
@@ -62,6 +64,7 @@ for txt_name in txt_name_list:
     print("Output:" + txt_outpath)
     txt_outfile = open(txt_outpath, "w")
     
+    # 2桁以上のtxtは無視 modified 2018.9.16
     num_lines = sum(1 for line in open(mypath + txt_name))
     print("##### num lines", num_lines, "#####")
     if num_lines >= 10:
