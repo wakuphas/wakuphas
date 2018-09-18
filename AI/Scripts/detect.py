@@ -32,7 +32,7 @@ for item in items:
     conf = item['confidence']
 
     # 自信のあるものを表示
-    if conf >= 0.03:
+    if conf >= 0.1:
 
         for i in class_names:
             if label == i:
