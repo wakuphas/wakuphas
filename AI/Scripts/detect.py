@@ -8,7 +8,7 @@ tfnet = TFNet(options)
 print("Model loading ... success!")
 
 # 画像の読み込み
-img = cv2.imread('test_airport.png')
+img = cv2.imread('test_airport.jpg')
 
 # 解析を行う
 items = tfnet.return_predict(img)
