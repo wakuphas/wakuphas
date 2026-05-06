@@ -7,25 +7,25 @@ import paramiko
 import requests
 
 # ==============================================================================
-# SGLI Granule ID 取得 & G-Portal SFTPダウンロードスクリプト
+# SGLI Granule ID search and G-Portal SFTP download script
 #
-# 機能:
-#   1. G-Portal CSW APIを使って、指定条件に合うSGLIのgranule IDを検索
-#   2. 見つかったファイルをG-PortalのSFTPサーバからダウンロード
+# Features:
+#   1. Search for SGLI granule IDs using the G-Portal CSW API
+#   2. Download matched files from the G-Portal SFTP server
 #
-# G-Portal SFTP接続情報:
-#   ホスト: ftp.gportal.jaxa.jp
-#   ポート: 2051
-#   認証:   ユーザ名/パスワード
+# G-Portal SFTP connection:
+#   Host: ftp.gportal.jaxa.jp
+#   Port: 2051
+#   Auth: username/password
 # ==============================================================================
 
-# ── SFTP接続設定 ──────────────────────────────────────────────────
+# ── SFTP connection settings ─────────────────────────────────────
 SFTP_HOST = "ftp.gportal.jaxa.jp"
 SFTP_PORT = 2051
 SFTP_USER = os.getenv("GPORTAL_SFTP_USER", "")
 SFTP_PASSWORD = os.getenv("GPORTAL_SFTP_PASSWORD", "")
 
-# ── CSW APIページング設定 ─────────────────────────────────────────
+# ── CSW API paging settings ──────────────────────────────────────
 MAX_PER_PAGE = 20
 MAX_TOTAL = 100
 
@@ -34,13 +34,13 @@ def _validate_credentials():
     if SFTP_USER and SFTP_PASSWORD:
         return
 
-    print("[ERROR] SFTP認証情報が未設定です。")
-    print("        環境変数 GPORTAL_SFTP_USER と GPORTAL_SFTP_PASSWORD を設定してください。")
+    print("[ERROR] SFTP credentials are not set.")
+    print("        Set the GPORTAL_SFTP_USER and GPORTAL_SFTP_PASSWORD environment variables.")
     sys.exit(1)
 
 
 # ──────────────────────────────────────────────────────────────────
-# CSW API: 全レコードをページングしながら取得
+# CSW API: fetch all records with pagination
 # ──────────────────────────────────────────────────────────────────
 def fetch_all_records(base_url, max_per_page=MAX_PER_PAGE, max_total=MAX_TOTAL):
     all_features = []
@@ -51,7 +51,7 @@ def fetch_all_records(base_url, max_per_page=MAX_PER_PAGE, max_total=MAX_TOTAL):
         print(f"[INFO] Fetching startPosition={start_pos} ...")
         response = requests.get(paged_url)
         if response.status_code != 200:
-            print("[ERROR] G-Portal CSW APIへのアクセスに失敗しました。")
+            print("[ERROR] Failed to access the G-Portal CSW API.")
             break
 
         data = response.json()
@@ -60,31 +60,31 @@ def fetch_all_records(base_url, max_per_page=MAX_PER_PAGE, max_total=MAX_TOTAL):
             break
 
         all_features.extend(features)
-        print(f"[INFO] {len(features)} 件取得 (合計: {len(all_features)} 件)")
+        print(f"[INFO] Retrieved {len(features)} records (total: {len(all_features)})")
 
         if len(features) < max_per_page:
             break
         start_pos += max_per_page
 
         if len(all_features) >= max_total:
-            print(f"[INFO] 上限 {max_total} 件に達したため取得を停止します。")
+            print(f"[INFO] Reached the upper limit of {max_total} records. Stopping fetch.")
             break
 
     return all_features[:max_total]
 
 
 # ──────────────────────────────────────────────────────────────────
-# CSW API: 物理量・軌道・日付・バウンディングボックスでgranuleを検索
+# CSW API: search granules by quantity, orbit, date, and bounding box
 # ──────────────────────────────────────────────────────────────────
 def search_granules(quantity, orbit_code, date_str, lat_ll, lon_ll, lat_ur, lon_ur):
     """
-    G-Portal CSW APIを使ってgranuleを検索し、
-    {file_name: sftp_path} の辞書を返す。
+    Search granules using the G-Portal CSW API and return
+    a dictionary in the form {file_name: sftp_path}.
     """
     orbit_dir_map = {"A": "Ascending", "D": "Descending"}
     orbit_dir = orbit_dir_map.get(orbit_code.upper())
     if orbit_dir is None:
-        print("[ERROR] 軌道方向は 'A'(昇交点) または 'D'(降交点) を指定してください。")
+        print("[ERROR] Orbit direction must be 'A' (Ascending) or 'D' (Descending).")
         sys.exit(1)
 
     date = datetime.strptime(date_str, "%Y%m%d")
@@ -104,12 +104,12 @@ def search_granules(quantity, orbit_code, date_str, lat_ll, lon_ll, lat_ur, lon_
         f"&maxRecords={MAX_PER_PAGE}"
     )
 
-    print("[INFO] 検索URL:")
+    print("[INFO] Search URL:")
     print(base_url)
     print()
 
     features = fetch_all_records(base_url)
-    print(f"[INFO] 合計 {len(features)} 件のgranuleが見つかりました。\n")
+    print(f"[INFO] Found {len(features)} granules in total.\n")
 
     granule_map = {}
     for feat in features:
@@ -121,7 +121,7 @@ def search_granules(quantity, orbit_code, date_str, lat_ll, lon_ll, lat_ur, lon_
         file_name = file_url.split("/")[-1]
 
         if "X0000" in file_name:
-            print(f"[SKIP] X0000を含むため除外: {file_name}")
+            print(f"[SKIP] Excluded because it contains X0000: {file_name}")
             continue
 
         sftp_path = extract_sftp_path(file_url)
@@ -131,21 +131,21 @@ def search_granules(quantity, orbit_code, date_str, lat_ll, lon_ll, lat_ur, lon_
 
 
 # ──────────────────────────────────────────────────────────────────
-# CSWの fileName URL → SFTPサーバ上のパスに変換
+# Convert a CSW fileName URL to an SFTP server path
 # ──────────────────────────────────────────────────────────────────
 def extract_sftp_path(file_url):
     """
-    G-Portal CSWが返す fileName URL からSFTPパスを抽出する。
+    Extract an SFTP path from the fileName URL returned by G-Portal CSW.
 
-    パターン1 (推奨): URL内に /standard/ が含まれる場合
+    Pattern 1 (preferred): the URL contains /standard/
       https://gportal.jaxa.jp/gpr/product/standard/GCOM-C/.../file.h5
       → /standard/GCOM-C/.../file.h5
 
-    パターン2: /gpr/product/ 以降のパス
+    Pattern 2: use the path after /gpr/product/
       https://gportal.jaxa.jp/gpr/product/...
       → /...
 
-    パターン3: フォールバック (パスが取得できない場合はファイル名のみ)
+    Pattern 3: fallback to the parsed path as-is
     """
     parsed = urlparse(file_url)
     path = parsed.path
@@ -160,21 +160,21 @@ def extract_sftp_path(file_url):
 
 
 # ──────────────────────────────────────────────────────────────────
-# SFTP接続 & ファイルダウンロード
+# SFTP connection and file download
 # ──────────────────────────────────────────────────────────────────
 def download_via_sftp(granule_map, output_dir="."):
     """
-    granule_map: {ファイル名: SFTPサーバ上のパス}
-    output_dir : ダウンロード先ローカルディレクトリ
+    granule_map: {file_name: path_on_sftp_server}
+    output_dir : local download directory
     """
     if not granule_map:
-        print("[WARN] ダウンロード対象のgranuleがありません。")
+        print("[WARN] No granules available for download.")
         return
 
     _validate_credentials()
     os.makedirs(output_dir, exist_ok=True)
 
-    print(f"[INFO] SFTP接続中: {SFTP_HOST}:{SFTP_PORT} (ユーザ: {SFTP_USER})")
+    print(f"[INFO] Connecting to SFTP: {SFTP_HOST}:{SFTP_PORT} (user: {SFTP_USER})")
 
     transport = None
     sftp = None
@@ -182,7 +182,7 @@ def download_via_sftp(granule_map, output_dir="."):
         transport = paramiko.Transport((SFTP_HOST, SFTP_PORT))
         transport.connect(username=SFTP_USER, password=SFTP_PASSWORD)
         sftp = paramiko.SFTPClient.from_transport(transport)
-        print("[INFO] SFTP接続成功\n")
+        print("[INFO] SFTP connection established successfully.\n")
 
         success_list = []
         fail_list = []
@@ -191,7 +191,7 @@ def download_via_sftp(granule_map, output_dir="."):
             local_path = os.path.join(output_dir, file_name)
 
             if os.path.exists(local_path):
-                print(f"[SKIP] 既に存在します: {file_name}")
+                print(f"[SKIP] Already exists: {file_name}")
                 success_list.append(file_name)
                 continue
 
@@ -202,46 +202,46 @@ def download_via_sftp(granule_map, output_dir="."):
                 sftp.get(sftp_path, local_path, callback=_progress_callback(file_name))
                 print()
                 success_list.append(file_name)
-                print(f"[OK]   ダウンロード完了: {file_name}\n")
+                print(f"[OK]   Download completed: {file_name}\n")
             except FileNotFoundError:
-                print(f"\n[ERROR] SFTPサーバにファイルが見つかりません: {sftp_path}")
+                print(f"\n[ERROR] File not found on the SFTP server: {sftp_path}")
                 fail_list.append((file_name, "FileNotFound"))
             except PermissionError:
-                print(f"\n[ERROR] アクセス権限がありません: {sftp_path}")
+                print(f"\n[ERROR] Permission denied: {sftp_path}")
                 fail_list.append((file_name, "PermissionError"))
             except Exception as e:
-                print(f"\n[ERROR] ダウンロード失敗 ({file_name}): {e}")
+                print(f"\n[ERROR] Download failed ({file_name}): {e}")
                 fail_list.append((file_name, str(e)))
                 if os.path.exists(local_path):
                     os.remove(local_path)
 
         print("=" * 60)
-        print(f"[SUMMARY] 成功: {len(success_list)} 件 / 失敗: {len(fail_list)} 件")
+        print(f"[SUMMARY] Success: {len(success_list)} / Failed: {len(fail_list)}")
         if fail_list:
-            print("[SUMMARY] 失敗ファイル一覧:")
+            print("[SUMMARY] Failed files:")
             for fn, reason in fail_list:
                 print(f"  - {fn} ({reason})")
         print("=" * 60)
 
     except paramiko.AuthenticationException:
-        print("[ERROR] SFTP認証に失敗しました。ユーザ名・パスワードを確認してください。")
+        print("[ERROR] SFTP authentication failed. Check the username and password.")
         sys.exit(1)
     except paramiko.SSHException as e:
-        print(f"[ERROR] SFTP接続エラー: {e}")
+        print(f"[ERROR] SFTP connection error: {e}")
         sys.exit(1)
     except Exception as e:
-        print(f"[ERROR] 予期しないエラー: {e}")
+        print(f"[ERROR] Unexpected error: {e}")
         sys.exit(1)
     finally:
         if sftp:
             sftp.close()
         if transport:
             transport.close()
-        print("[INFO] SFTP接続を切断しました。")
+        print("[INFO] SFTP connection closed.")
 
 
 def _progress_callback(file_name):
-    """SFTPダウンロードの進捗を表示するコールバック関数を返す（5%刻みで更新）"""
+    """Return a callback that prints SFTP download progress in 5 percent steps."""
     last_pct = [-1]
 
     def callback(transferred, total):
@@ -268,32 +268,32 @@ def _progress_callback(file_name):
 
 
 # ──────────────────────────────────────────────────────────────────
-# メイン
+# Main
 # ──────────────────────────────────────────────────────────────────
 def main():
     auto_mode = "--auto" in sys.argv
     args = [a for a in sys.argv[1:] if a != "--auto"]
 
     if len(args) < 7:
-        print("使い方:")
-        print("  python get_sgli_granuleID_and_file.py <物理量> <軌道> <日付YYYYMMDD> <lat_ll> <lon_ll> <lat_ur> <lon_ur> [出力ディレクトリ] [--auto]")
+        print("Usage:")
+        print("  python get_sgli_granuleID_and_file.py <quantity> <orbit> <date_yyyymmdd> <lat_ll> <lon_ll> <lat_ur> <lon_ur> [output_dir] [--auto]")
         print()
-        print("例:")
+        print("Examples:")
         print("  python get_sgli_granuleID_and_file.py SST D 20250702 35 135 45 150")
         print("  python get_sgli_granuleID_and_file.py NDVIF D 20250701 0 0 0 0 ./download")
         print("  python get_sgli_granuleID_and_file.py IWPRK D 20210710 35.0 139.5 35.8 140.2 ./download")
         print("  python get_sgli_granuleID_and_file.py SST_Q D 20250702 35 135 45 150 ./download --auto")
         print()
-        print("引数:")
-        print("  <物理量>            物理量コード (例: SST, SST_Q, NDVIF, CHL)")
-        print("  <軌道>          軌道方向 A=昇交点 / D=降交点")
-        print("  <日付YYYYMMDD>  対象日付 (例: 20250702)")
-        print("  <lat_ll>        バウンディングボックス 南緯 (度)")
-        print("  <lon_ll>        バウンディングボックス 西経 (度)")
-        print("  <lat_ur>        バウンディングボックス 北緯 (度)")
-        print("  <lon_ur>        バウンディングボックス 東経 (度)")
-        print("  [出力ディレクトリ]  省略時はカレントディレクトリ")
-        print("  [--auto]        確認プロンプトをスキップして自動DL")
+        print("Arguments:")
+        print("  <quantity>       Quantity code (e.g. SST, SST_Q, NDVIF, CHL)")
+        print("  <orbit>          Orbit direction: A=Ascending / D=Descending")
+        print("  <date_yyyymmdd>  Target date (e.g. 20250702)")
+        print("  <lat_ll>         Bounding box lower latitude (degrees)")
+        print("  <lon_ll>         Bounding box lower longitude (degrees)")
+        print("  <lat_ur>         Bounding box upper latitude (degrees)")
+        print("  <lon_ur>         Bounding box upper longitude (degrees)")
+        print("  [output_dir]     Output directory, defaults to the current directory")
+        print("  [--auto]         Skip the confirmation prompt and start downloading automatically")
         sys.exit(1)
 
     quantity = args[0].upper()
@@ -306,42 +306,42 @@ def main():
     output_dir = args[7] if len(args) >= 8 else "."
 
     print("=" * 60)
-    print(" SGLI Granule 検索 & ダウンロード")
+    print(" SGLI Granule Search & Download")
     print("=" * 60)
-    print(f"  物理量    : {quantity}")
-    print(f"  軌道方向  : {orbit_code} ({'昇交点' if orbit_code == 'A' else '降交点'})")
-    print(f"  日付      : {yyyymmdd}")
-    print(f"  範囲(緯度): {lat_ll}° 〜 {lat_ur}°")
-    print(f"  範囲(経度): {lon_ll}° 〜 {lon_ur}°")
-    print(f"  出力先    : {output_dir}")
-    print(f"  自動DL    : {'ON' if auto_mode else 'OFF'}")
+    print(f"  Quantity   : {quantity}")
+    print(f"  Orbit      : {orbit_code} ({'Ascending' if orbit_code == 'A' else 'Descending'})")
+    print(f"  Date       : {yyyymmdd}")
+    print(f"  Latitude   : {lat_ll}° to {lat_ur}°")
+    print(f"  Longitude  : {lon_ll}° to {lon_ur}°")
+    print(f"  Output dir : {output_dir}")
+    print(f"  Auto mode  : {'ON' if auto_mode else 'OFF'}")
     print("=" * 60)
     print()
 
     granule_map = search_granules(quantity, orbit_code, yyyymmdd, lat_ll, lon_ll, lat_ur, lon_ur)
 
-    print("[INFO] 取得ファイル一覧:")
+    print("[INFO] Retrieved files:")
     for fn, path in granule_map.items():
         print(f"  {fn}")
         print(f"    SFTP: {path}")
     print()
 
     if not granule_map:
-        print("[INFO] 該当するgranuleが見つかりませんでした。終了します。")
+        print("[INFO] No matching granules were found. Exiting.")
         sys.exit(0)
 
     if not auto_mode:
         try:
-            answer = input(f"上記 {len(granule_map)} 件をダウンロードしますか？ [yes/no]: ").strip().lower()
+            answer = input(f"Download the {len(granule_map)} files listed above? [yes/no]: ").strip().lower()
         except (EOFError, KeyboardInterrupt):
-            print("\n[INFO] キャンセルしました。")
+            print("\n[INFO] Cancelled.")
             sys.exit(0)
 
         if answer not in ("yes", "y"):
-            print("[INFO] ダウンロードをキャンセルしました。")
+            print("[INFO] Download cancelled.")
             sys.exit(0)
     else:
-        print(f"[INFO] 自動DLモード: {len(granule_map)} 件のダウンロードを開始します。")
+        print(f"[INFO] Auto-download mode: starting download for {len(granule_map)} files.")
 
     download_via_sftp(granule_map, output_dir=output_dir)
 
